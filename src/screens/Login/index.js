@@ -13,6 +13,7 @@ import {
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Senha } from '../../components/Password';
+import { SenhaLogin } from '../../components/PasswordLogin';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 export function Login({navigation}){
@@ -41,8 +42,8 @@ export function Login({navigation}){
 
     const handlePressCriarConta = () => {
       setInfo('');
-      setLoginUser('');
-      setSenhaUser('');
+      //setLoginUser('');
+      //setSenhaUser('');
       setModalActive(true);
 
     };
@@ -139,7 +140,7 @@ async function VerificaCadastro() {
                     name='user-alt'
                     onChangeText={x => setLoginUser(x)}
                 />
-                <Senha 
+                <SenhaLogin 
                     hasIcon
                     placeholder='Senha'
                     name='key'
@@ -152,7 +153,7 @@ async function VerificaCadastro() {
                     onPress={VerificaLogin}
                 />
                 <Button 
-                    title='Cadastre-se'
+                    title='Cadastre-se '
                     onPress={handlePressCriarConta}
                 />
             </View>

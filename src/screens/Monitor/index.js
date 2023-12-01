@@ -131,7 +131,7 @@ export function Monitor({ navigation }) {
   {data.length > 0 ? (
     <>
       <View style={styles.row}>
-        <View style={styles.barContainerTemperatura}>
+        <View style={styles.barContainer2}>
           <Text style={styles.texto}>Temperatura: {data[0].temperatura}</Text>
           <AnimatedCircularProgress
             size={100}
@@ -155,7 +155,7 @@ export function Monitor({ navigation }) {
         </View>
       </View>
       <View style={styles.row}>
-        <View style={styles.barContainerUmidade}>
+        <View style={styles.barContainer2}>
           <Text style={styles.texto}>Umidade: {data[0].umidade}</Text>
           <AnimatedCircularProgress
             size={100}
@@ -166,18 +166,18 @@ export function Monitor({ navigation }) {
           />
         </View>
         <View style={styles.barContainer}>
-          <Text style={styles.texto}>Luminosidade: {data[0].luminosidade}</Text>
+          <Text style={styles.texto}>Fósforo: {data[0].fosforo}</Text>
           <AnimatedCircularProgress
             size={100}
             width={20}
-            fill={getProgressBarFill(data[0].luminosidade, 0, 100)}
-            tintColor={getProgressBarColor(data[0].luminosidade)}
+            fill={getProgressBarFill(data[0].fosforo, 0, 100)}
+            tintColor={getProgressBarColor(data[0].fosforo)}
             backgroundColor="#3d5875"
           />
         </View>
       </View>
       <View style={styles.row}>
-        <View style={styles.barContainerNitrogenio}>
+        <View style={styles.barContainer2}>
           <Text style={styles.texto}>Nitrogênio: {data[0].nitrogenio}</Text>
           <AnimatedCircularProgress
             size={100}
@@ -198,16 +198,16 @@ export function Monitor({ navigation }) {
           />
         </View>
       </View>
-      <View style={styles.barContainerFosforo}>
-          <Text style={styles.texto}>Fósforo: {data[0].fosforo}</Text>
+        {/* <View style={styles.barContainer}>
+          <Text style={styles.texto}>Luminosidade: {data[0].luminosidade}</Text>
           <AnimatedCircularProgress
             size={100}
             width={20}
-            fill={getProgressBarFill(data[0].fosforo, 0, 100)}
-            tintColor={getProgressBarColor(data[0].fosforo)}
+            fill={getProgressBarFill(data[0].luminosidade, 0, 100)}
+            tintColor={getProgressBarColor(data[0].luminosidade)}
             backgroundColor="#3d5875"
           />
-        </View>
+        </View> */}
       {/* <View>
         <TouchableOpacity style={styles.row2}>
             <Text> BOTAO</Text>

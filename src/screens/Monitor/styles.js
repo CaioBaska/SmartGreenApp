@@ -15,6 +15,12 @@ export const styles = StyleSheet.create({
     barContainer: {
       alignItems: 'center',
       marginHorizontal: 35,
+      marginRight:40,
+    },
+    barContainer2: {
+      alignItems: 'center',
+      marginHorizontal: 35,
+      marginRight:20,
     },
     barContainerTemperatura: {
       alignItems: 'center',

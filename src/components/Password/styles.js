@@ -15,9 +15,13 @@ export const styles = StyleSheet.create({
         marginHorizontal: 10,
         backgroundColor:'#F8F9FA',
     },
+    iconEye:{
+        marginLeft: 30,
+        marginRight:10,
+    },
     txtInput: {
         backgroundColor:'#F8F9FA',
-        width: '80%',
+        width: '63%',
         height: 45,
         fontSize: 18,
         fontWeight: 'bold'
