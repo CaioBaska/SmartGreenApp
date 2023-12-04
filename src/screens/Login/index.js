@@ -128,7 +128,7 @@ async function VerificaCadastro() {
             <Image 
                 style={styles.image}
                 resizeMode='contain'
-                source={require('../../assets/images/loja_do_bacana_1.png')} 
+                source={require('../../assets/images/logo.png')} 
             />
             <Text style={styles.Info}>
                 {Info}
@@ -148,6 +148,9 @@ async function VerificaCadastro() {
                 />
             </KeyboardAvoidingView>
             <View style={styles.buttonContainer}>
+                
+                <Text style={styles.fontEsqueci}>Esqueci minha senha</Text>
+              
                 <Button 
                     title='Entrar'
                     onPress={VerificaLogin}
@@ -172,7 +175,7 @@ async function VerificaCadastro() {
                     />
                 </TouchableHighlight> */}
                     <Text style={styles.title}>
-                        Crie sua conta 
+                        Crie sua conta
                     </Text>
                     <View style={styles.separator}/>
                     <Input 

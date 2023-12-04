@@ -21,6 +21,13 @@ export const styles = StyleSheet.create({
         marginTop: 80,
         //marginBottom:80,
     },
+    fontEsqueci:{
+        color:'#0066ff',
+        fontSize:15,
+        textDecorationLine: 'underline',
+        marginLeft:70,
+        marginBottom:15,
+    },
     modalView:{
         flex: 1,
         justifyContent: 'center',
@@ -29,7 +36,7 @@ export const styles = StyleSheet.create({
         padding: 10,
     },
     title: {
-        fontSize: 25,
+        fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 32,
         marginTop:10

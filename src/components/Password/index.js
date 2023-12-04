@@ -34,7 +34,7 @@ export function Senha({
       <TouchableOpacity onPress={togglePasswordVisibility}>
         <FontAwesome5
           style={styles.iconEye}
-          name={isPasswordVisible ? 'eye-slash' : 'eye'}
+          name={isPasswordVisible ? 'eye' : 'eye-slash'}
           size={20}
           color='black'
         />
