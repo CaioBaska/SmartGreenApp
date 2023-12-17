@@ -31,9 +31,9 @@ export const styles = StyleSheet.create({
     fontSize: 20,
   },
   titulo: {
-    marginLeft:120,
+    marginLeft: 120,
     marginBottom: 40,
-    marginTop: 80,
+    marginTop: -30,
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -123,16 +123,47 @@ export const styles = StyleSheet.create({
     height: 50,
     backgroundColor: '#f1f8ff'
   },
-  btnRetornaMonitoramento:{
-    marginLeft:300,
-    marginBottom:10,
+  btnRetornaMonitoramento: {
+    marginLeft: 175,
+    marginBottom: 10,
   },
-  botoesMonitoramento:{
+  botoesMonitoramento: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     display: 'flex',
-    marginLeft:80,
-    marginRight:80,
-    marginTop:40,
-  }
+    marginLeft: 80,
+    marginRight: 80,
+    marginTop: 40,
+  },
+  btnEditarPlanta: {
+    alignItems: 'center',
+    marginTop: 50,
+    marginBottom: 30,
+    //marginLeft:145,
+    //marginRight:145,
+    //borderRadius:5,
+    //borderWidth:5,
+  },
+  txtEditarPlanta: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 30,
+    marginBottom: 20,
+    marginTop: 10,
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  btnCriarPlanta: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  Info: {
+    marginTop:10,
+    marginBottom:20,
+    color: 'red'
+  },
+  barContainerCentro:{
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
