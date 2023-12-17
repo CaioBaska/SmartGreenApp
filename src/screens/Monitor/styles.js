@@ -80,13 +80,14 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
   },
   btnIniciar: {
-    marginTop: 50,
+    marginTop: 10,
     marginLeft: 50,
     marginRight: 50,
     borderRadius: 10,
     alignItems: 'center',
     backgroundColor: '#c9e265',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    
   },
   tituloModal: {
     marginBottom: 40,
@@ -166,4 +167,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  botoesRelatorio:{
+    marginTop:200,
+  }
 });

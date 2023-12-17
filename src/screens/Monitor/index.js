@@ -71,7 +71,7 @@ export function Monitor({ navigation }) {
 
   const [intervalId, setIntervalId] = React.useState(null);
 
-  const[habilitaEnvioMQTT,setHabilitaEnvioMQTT]=useState(false);
+  const [habilitaEnvioMQTT, setHabilitaEnvioMQTT] = useState(false);
 
 
 
@@ -103,38 +103,30 @@ export function Monitor({ navigation }) {
       const response = await fetch(`https://smartgreen.azurewebsites.net/Monitoramento/mandarTopicoMqtt?mensagem=${mensagemMQTT}`, {
         method: 'GET',
       });
+      console.log("Mensagem MQTT Enviada")
     }
     catch {
-      conseole
-      console.log(mensagemMQTT)
+      // console.log(mensagemMQTT)
 
     }
   };
 
-  const checkUmidade = () => {
-    // Verifique a condição desejada
-    console.log(habilitaEnvioMQTT)
-    if(habilitaEnvioMQTT==true){
-
-      if (data.length>0 && data[0].umidade < plantaData[0].umidade) {
-        // Chame o método MQTT
+  useEffect(() => {
+    const checkUmidade = () => {
+      if (!modalVisible && !modalCriaPlanta && !modalDigitaRelatorio && data.length > 0 && data[0].umidade < plantaData[0].umidade) {
         handleMQTTButtonPress();
       }
+    };
 
+    // Inicie a verificação a cada segundo apenas se modalVisible e modalCriaPlanta forem false
+    if (!modalVisible && !modalCriaPlanta) {
+      const id = setInterval(checkUmidade, 2000);
+      setIntervalId(id);
+
+      // Limpe o intervalo quando o componente for desmontado ou quando modalVisible/modalCriaPlanta mudar para true
+      return () => clearInterval(id);
     }
-   
-  };
-
-  // Efeito para iniciar a verificação a cada segundo
-  useEffect(() => {
-    // Inicie a verificação a cada segundo
-    const id = setInterval(checkUmidade, 1000);
-    // Armazene o ID do intervalo no estado
-    setIntervalId(id);
-
-    // Limpe o intervalo quando o componente for desmontado
-    return () => clearInterval(id);
-  }, []); // Dependências do efeito
+  }, [data, plantaData, modalVisible, modalCriaPlanta]);
 
   const abreRelatorio = () => {
     setModalDigitaRelatorio(true);
@@ -171,10 +163,9 @@ export function Monitor({ navigation }) {
       const json = JSON.parse(text);
 
       SetPlantaData(json);
-      if (imagemSelecionada != null) {
-        setHabilitaEnvioMQTT(true);
-        setModalVisible(false);
-      }
+      setHabilitaEnvioMQTT(true);
+      setModalVisible(false);
+
     } catch (error) {
       console.error(error);
     }
@@ -386,6 +377,11 @@ export function Monitor({ navigation }) {
     }
   };
 
+const handleFechaRelatorio = ()=>{
+    setModalGeraRelatorio(false);
+    setModalDigitaRelatorio(false);
+}
+
   const fecharModaisRelatorio = () => {
     setModalGeraRelatorio(false);
     setModalDigitaRelatorio(false);
@@ -478,7 +474,7 @@ export function Monitor({ navigation }) {
   };
 
   const botaoFechaMonitoramentoEditado = async () => {
-   
+
     setModalCriaPlanta(false);
     setRelatorioData([]);
   };
@@ -543,7 +539,6 @@ export function Monitor({ navigation }) {
             <Button
               title="Iniciar Monitoramento"
               onPress={handleIniciarMonitoramento}
-              disabled={!imagemSelecionada}
             />
           </View>
         </View>
@@ -585,8 +580,13 @@ export function Monitor({ navigation }) {
           />
 
           {/* Botão para gerar relatório */}
-          <View style={styles.btnIniciar}>
-            <Button title="Gerar Relatório" onPress={handleGeraRelatorio} />
+          <View style={styles.botoesRelatorio}>
+            <View style={styles.btnIniciar}>
+              <Button title="Gerar Relatório" onPress={handleGeraRelatorio} />
+            </View>
+            <View style={styles.btnIniciar}>
+              <Button title="Voltar" onPress={handleFechaRelatorio}></Button>
+            </View>
           </View>
         </View>
       </Modal>
