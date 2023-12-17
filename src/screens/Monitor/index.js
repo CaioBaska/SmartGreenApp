@@ -92,7 +92,7 @@ export function Monitor({ navigation }) {
       setTemperaturaAlertVisible(true);
       setPotassioAlertVisible(true);
       // setLuminosidadeAlertVisible(true);
-    }, 60000); // 60000 milissegundos = 1 minuto
+    }, 300000); // 60000 milissegundos = 1 minuto
 
     return () => clearTimeout(alertTimeout);
   }, [fosforoAlertVisible]);
@@ -103,7 +103,21 @@ export function Monitor({ navigation }) {
       const response = await fetch(`https://smartgreen.azurewebsites.net/Monitoramento/mandarTopicoMqtt?mensagem=${mensagemMQTT}`, {
         method: 'GET',
       });
-      console.log("Mensagem MQTT Enviada")
+      console.log("Mensagem MQTT Enviada Ligar")
+    }
+    catch {
+      // console.log(mensagemMQTT)
+
+    }
+  };
+
+  const handleMQTTButtonDesligaPress = async () => {
+    try {
+      setMensagemMQTT("desliga")
+      const response = await fetch(`https://smartgreen.azurewebsites.net/Monitoramento/mandarTopicoMqtt?mensagem=${mensagemMQTT}`, {
+        method: 'GET',
+      });
+      console.log("Mensagem MQTT Enviada Desligar")
     }
     catch {
       // console.log(mensagemMQTT)
@@ -116,6 +130,10 @@ export function Monitor({ navigation }) {
       if (!modalVisible && !modalCriaPlanta && !modalDigitaRelatorio && data.length > 0 && data[0].umidade < plantaData[0].umidade) {
         handleMQTTButtonPress();
       }
+      if(!modalVisible && !modalCriaPlanta && !modalDigitaRelatorio && data.length > 0 && data[0].umidade > plantaData[0].umidade){
+        handleMQTTButtonDesligaPress();
+      }
+
     };
 
     // Inicie a verificação a cada segundo apenas se modalVisible e modalCriaPlanta forem false
