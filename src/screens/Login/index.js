@@ -94,46 +94,46 @@ export function Login({ navigation }) {
   }
 
   async function VerificaCadastro() {
-
-    if (createUser == '' && createPassword == '' && createLogin == '') {
+    if (createUser === '' || createPassword === '' || createLogin === '') {
       setInfoCadastro('Por favor, preencha todos os campos!');
-    }
-    else if (createLogin.length < 4 && createLogin.length < 4 || createLogin.length == 4 && createLogin.length == 4) {
+    } else if (createLogin.length < 4 || createLogin.length === 4) {
       setInfoCadastro('Login deve conter mais de 4 caracteres');
-    }
-    else if (createConfirmPassword.length < 8 && createPassword.length < 8 || createConfirmPassword.length == 8 && createPassword.length == 8) {
-      setInfoCadastro('A senha deve conter mais de 8 caracteres')
-    }
-    else if (createConfirmPassword !== createPassword) {
-      setInfoCadastro('As senhas não coincidem');
-    }
-    else if (createUser !== '' && createPassword !== '' && createConfirmPassword !== '') {
+    } else if (createConfirmPassword.length < 8 || createPassword.length < 8 || createConfirmPassword !== createPassword) {
+      setInfoCadastro('A senha deve conter mais de 8 caracteres e as senhas devem coincidir');
+    } else {
       setInfoCadastro('');
-
+  
       try {
-        const response = await fetch('https://smartgreen.azurewebsites.net/Usuarios/criaLogin', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ nome: createUser, login: createLogin, senha: createPassword }),
-        });
-
-        if (response.ok) {
-          setModalActive(false);
+        // Verifica se o login já existe
+        const verificaLoginResponse = await fetch(`https://smartgreen.azurewebsites.net/Usuarios/verificaLogin?login=${createLogin}`);
+  
+        if (verificaLoginResponse.status === 200) {
+          // Já existe um usuário com este login
+          setInfoCadastro('Já existe um usuário com este login. Escolha outro.');
         } else {
-          // Lida com erros
-          setInfoCadastro('Erro ao criar usuário');
+          // Continua com a criação do usuário
+          const response = await fetch('https://smartgreen.azurewebsites.net/Usuarios/criaLogin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nome: createUser, login: createLogin, senha: createPassword }),
+          });
+  
+          if (response.ok) {
+            setModalActive(false);
+          } else {
+            // Lida com outros erros
+            setInfoCadastro('Erro ao criar usuário');
+          }
         }
       } catch (error) {
         //console.error('Erro:', error);
         setInfoCadastro('Ocorreu um erro ao tentar criar usuário');
       }
-    } else {
-      setInfoCadastro('Por favor, preencha todos os campos!');
     }
   }
-
+  
   async function VerificaAlteraSenha() {
     try {
       if (newLogin.length <= 0 || newPassword.length <= 0 || newConfirmPassword.length <= 0) {

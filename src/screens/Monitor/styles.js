@@ -132,8 +132,8 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     display: 'flex',
-    marginLeft: 80,
-    marginRight: 80,
+    marginLeft: 50,
+    marginRight: 50,
     marginTop: 40,
   },
   btnEditarPlanta: {

@@ -479,6 +479,10 @@ const handleFechaRelatorio = ()=>{
     setRelatorioData([]);
   };
 
+  const handleVoltaSelecionarPlanta = ()=>{
+    setModalVisible(true);
+  }
+
   const widthArr = [100, 38, 38, 38, 38, 38, 38, 38];
 
   return (
@@ -777,6 +781,9 @@ const handleFechaRelatorio = ()=>{
             </View>
           </View>
           <View style={styles.botoesMonitoramento}>
+            <TouchableOpacity onPress={handleVoltaSelecionarPlanta}  >
+              <FontAwesome5 name="seedling" size={50} color="black" />
+            </TouchableOpacity>
             <TouchableOpacity onPress={handleMQTTButtonPress}  >
               <FontAwesome5 name="tint" size={50} color="black" />
             </TouchableOpacity>
