@@ -544,12 +544,12 @@ const handleFechaRelatorio = ()=>{
               />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.barContainer, imagemSelecionada === 'ALFACE' && styles.imagemSelecionada]}
-              onPress={() => setImagemSelecionada('ALFACE')}>
+              style={[styles.barContainer, imagemSelecionada === 'BATATA' && styles.imagemSelecionada]}
+              onPress={() => setImagemSelecionada('BATATA')}>
               <Image
                 style={styles.image}
                 resizeMode='contain'
-                source={require('../../assets/images/ALFACE.png')} />
+                source={require('../../assets/images/BATATA.png')} />
             </TouchableOpacity>
           </View>
           <View style={styles.btnEditarPlanta}>
