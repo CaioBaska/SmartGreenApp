@@ -127,6 +127,10 @@ export const styles = StyleSheet.create({
   btnRetornaMonitoramento: {
     marginLeft: 175,
     marginBottom: 10,
+    marginLeft:90,
+    marginRight:90,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   botoesMonitoramento: {
     flexDirection: 'row',
@@ -169,5 +173,22 @@ export const styles = StyleSheet.create({
   },
   botoesRelatorio:{
     marginTop:200,
-  }
+  },
+  tituloRelatorioEmail: {
+    marginBottom: 40,
+    marginTop: 60,
+    marginLeft: 80,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  btnEnviarEmail:{
+    marginTop:20,
+    marginLeft: 70,
+    marginRight:-40,
+  },
+  botoesEnviarEmail:{
+    marginTop:80,
+    marginLeft: 70,
+    marginRight:-40,
+  },
 });

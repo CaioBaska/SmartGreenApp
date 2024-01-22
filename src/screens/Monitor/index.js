@@ -7,6 +7,7 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { Button } from '../../components/Button';
 import { Table, Row, Rows } from 'react-native-table-component';
 import { Input } from '../../components/Input';
+import RNPickerSelect from 'react-native-picker-select';
 
 export function Monitor({ navigation }) {
 
@@ -45,7 +46,10 @@ export function Monitor({ navigation }) {
   const [modalVisible2, setModalVisible2] = useState(true);
   const [modalDigitaRelatorio, setModalDigitaRelatorio] = useState(false);
   const [modalGeraRelatorio, setModalGeraRelatorio] = useState(false);
+  const [modalEnviaRelatorio, setModalEnviaRelatorio] = useState(false);
   const [modalCriaPlanta, setModalCriaPlanta] = useState(false);
+  const [ModalGrafico, setModalGrafico] = useState(false);
+
   const [imagemSelecionada, setImagemSelecionada] = useState(null);
   const [nomePlantaSelecionada, setNomePlantaSelecionada] = useState('');
   const [mensagemMQTT, setMensagemMQTT] = React.useState("liga");
@@ -73,29 +77,50 @@ export function Monitor({ navigation }) {
 
   const [habilitaEnvioMQTT, setHabilitaEnvioMQTT] = useState(false);
 
+  const [destinatarioEmail, setDestinatarioEmail] = useState('')
+  const [infoEnvioEmail, setInfoEnvioEmail] = useState('')
 
+  const [plantasModificadas,setPlantasModificadas]=useState('teste','testeee')
 
-
+  const placeholder = {
+    label: 'Selecione uma opção Personalizada',
+    value: null,
+    color: '#9EA0A4',
+  };
 
   useEffect(() => {
+    //console.log('erro busca dados');
     buscaDados();
     const interval = setInterval(buscaDados, 5000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    const alertTimeout = setTimeout(() => {
-      setFosforoAlertVisible(true);
-      setNitrogenioAlertVisible(true);
-      setPhAlertVisible(true);
-      setUmidadeAlertVisible(true);
-      setTemperaturaAlertVisible(true);
-      setPotassioAlertVisible(true);
-      // setLuminosidadeAlertVisible(true);
-    }, 300000); // 60000 milissegundos = 1 minuto
+    if(modalVisible==true){
+      console.log('effect carregado')
+      buscaDadosPlantas();
+      const interval = setInterval(buscaDadosPlantas, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [modalVisible]);
 
-    return () => clearTimeout(alertTimeout);
-  }, [fosforoAlertVisible]);
+  //ATIVAR NOVAMENTE
+  useEffect(() => {
+    if (!modalVisible && !modalCriaPlanta && !modalDigitaRelatorio && !modalGeraRelatorio && !modalEnviaRelatorio) {
+      const alertTimeout = setTimeout(() => {
+        setFosforoAlertVisible(true);
+        setNitrogenioAlertVisible(true);
+        setPhAlertVisible(true);
+        setUmidadeAlertVisible(true);
+        setTemperaturaAlertVisible(true);
+        setPotassioAlertVisible(true);
+        // setLuminosidadeAlertVisible(true);
+      }, 300000); // 60000 milissegundos = 1 minuto
+
+      return () => clearTimeout(alertTimeout);
+    }
+  }, [modalVisible, modalCriaPlanta, fosforoAlertVisible,modalDigitaRelatorio,modalGeraRelatorio,modalEnviaRelatorio]);
+
 
   const handleMQTTButtonPress = async () => {
     try {
@@ -130,7 +155,7 @@ export function Monitor({ navigation }) {
       if (!modalVisible && !modalCriaPlanta && !modalDigitaRelatorio && data.length > 0 && data[0].umidade < plantaData[0].umidade) {
         handleMQTTButtonPress();
       }
-      if(!modalVisible && !modalCriaPlanta && !modalDigitaRelatorio && data.length > 0 && data[0].umidade > plantaData[0].umidade){
+      if (!modalVisible && !modalCriaPlanta && !modalDigitaRelatorio && data.length > 0 && data[0].umidade > plantaData[0].umidade) {
         handleMQTTButtonDesligaPress();
       }
 
@@ -155,8 +180,32 @@ export function Monitor({ navigation }) {
   const buscaDados = async () => {
     try {
       const response = await fetch('https://smartgreen.azurewebsites.net/Monitoramento/obterDados');
-      const json = await response.json();
-      setData(json);
+
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar os valores Monitorados`);
+      }
+      else{
+        const json = await response.json(); 
+        setData(json); 
+      }
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const buscaDadosPlantas = async () => {
+    try {
+      const response = await fetch('https://smartgreen.azurewebsites.net/Monitoramento/obterTodasPlantas');
+
+      if (!response.ok) {
+        throw new Error(`Não foi possível buscar os dados Personalizados`);
+      }
+      else{
+        const json = await response.json(); 
+        setPlantasModificadas(json); 
+      }
+
     } catch (error) {
       console.error(error);
     }
@@ -164,7 +213,10 @@ export function Monitor({ navigation }) {
 
   const handleIniciarMonitoramento = async () => {
     try {
-      const response = await fetch(`https://smartgreen.azurewebsites.net/Plantas/obterDadosPlantas?nomePlanta=${imagemSelecionada}`, {
+      console.log(imagemSelecionada);
+      if(imagemSelecionada!=null){
+      
+        const response = await fetch(`https://smartgreen.azurewebsites.net/Plantas/obterDadosPlantas?nomePlanta=${imagemSelecionada}`, {
         method: 'GET', // Alterado para POST
       });
 
@@ -183,6 +235,9 @@ export function Monitor({ navigation }) {
       SetPlantaData(json);
       setHabilitaEnvioMQTT(true);
       setModalVisible(false);
+
+      }
+      
 
     } catch (error) {
       console.error(error);
@@ -395,14 +450,58 @@ export function Monitor({ navigation }) {
     }
   };
 
-const handleFechaRelatorio = ()=>{
+  const handleFechaRelatorio = () => {
     setModalGeraRelatorio(false);
     setModalDigitaRelatorio(false);
-}
+  }
+
+  const handleAbreGraficos = () => {
+    setModalGrafico(true);
+  }
+
+  const handleAbreEnviarRelatorio = () => {
+    setModalEnviaRelatorio(true);
+    setModalGeraRelatorio(false);
+    setDestinatarioEmail('');
+  }
+
+  const handleEnviarRelatorioEmail = async () => {
+    setModalEnviaRelatorio(true);
+    setModalGeraRelatorio(false);
+    try {
+      if (!dataInicial || !dataFinal || dataInicial.length !== 19 || dataFinal.length !== 19) {
+        setInfoEnvioEmail("Por favor, forneça datas válidas no formato DD/MM/AAAA HH:mm:ss");
+        return;
+      }
+
+      if (destinatarioEmail.length<=0){
+        setInfoEnvioEmail("Por favor, forneça um email antes de enviar");
+        return;
+      }
+
+      const url = `https://smartgreen.azurewebsites.net/Monitoramento/enviarRelatorioEmail?dataInicial=${dataInicial}&dataFinal=${dataFinal}&destinatario=${destinatarioEmail}`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Erro na solicitação: ${response.status} - ${response.statusText}`);
+      } else {
+        setModalEnviaRelatorio(false)
+        setModalGeraRelatorio(false)
+        setModalDigitaRelatorio(false)
+      }
+
+    }
+    catch {
+      throw new Error(`Erro na solicitação`)
+    }
+
+  }
 
   const fecharModaisRelatorio = () => {
     setModalGeraRelatorio(false);
     setModalDigitaRelatorio(false);
+    setModalEnviaRelatorio(false);
   };
 
   const BotaoVoltaTelalogin = () => {
@@ -497,7 +596,7 @@ const handleFechaRelatorio = ()=>{
     setRelatorioData([]);
   };
 
-  const handleVoltaSelecionarPlanta = ()=>{
+  const handleVoltaSelecionarPlanta = () => {
     setModalVisible(true);
   }
 
@@ -556,6 +655,17 @@ const handleFechaRelatorio = ()=>{
             <TouchableOpacity onPress={BotaoAbreTelaEditar} >
               <FontAwesome5 name="edit" size={50} color="black" />
             </TouchableOpacity>
+          </View>
+          <View>
+          <RNPickerSelect
+            onValueChange={(value) => console.log(value)}
+            placeholder={placeholder}
+            items={[
+                { label: 'Football', value: 'football' },
+                { label: 'Baseball', value: 'baseball' },
+                { label: 'Hockey', value: 'hockey' },
+            ]}
+        />
           </View>
           <View style={styles.btnIniciar}>
             <Button
@@ -620,8 +730,14 @@ const handleFechaRelatorio = ()=>{
 
         <View style={styles.container}>
           <View style={styles.btnRetornaMonitoramento}>
+            <TouchableOpacity onPress={handleAbreGraficos}>
+              <FontAwesome5 name='chart-line' size={30} color="black" />
+            </TouchableOpacity>
             <TouchableOpacity onPress={fecharModaisRelatorio}>
               <FontAwesome5 name='home' size={30} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleAbreEnviarRelatorio}>
+              <FontAwesome5 name='file-import' size={30} color="black" />
             </TouchableOpacity>
           </View>
           <ScrollView>
@@ -630,6 +746,43 @@ const handleFechaRelatorio = ()=>{
               <Rows data={relatorioData} widthArr={widthArr} />
             </Table>
           </ScrollView>
+        </View>
+      </Modal>
+      {/*MODAL ENVIA RELATORIO*/}
+      <Modal
+        visible={modalEnviaRelatorio}
+      >
+        <View>
+          <View>
+            <Text style={styles.tituloRelatorioEmail}> Enviar Email com Relatório</Text>
+          </View>
+
+          <View>
+            <Input
+              placeholder='Digite o Email para o envio do relatório'
+              onChangeText={x => setDestinatarioEmail(x)}
+            >
+            </Input>
+            <Text style={styles.Info}>
+            {infoEnvioEmail}
+          </Text>
+          </View>
+          <View style={styles.botoesEnviarEmail}>
+            <View>
+              <Button
+                title='Enviar'
+                onPress={handleEnviarRelatorioEmail}
+              >
+              </Button>
+            </View>
+            <View>
+              <Button
+                title='Voltar'
+                onPress={fecharModaisRelatorio}
+              >
+              </Button>
+            </View>
+          </View>
         </View>
       </Modal>
       {/*MODAL EDITA PLANTA */}
@@ -663,7 +816,15 @@ const handleFechaRelatorio = ()=>{
 
         </View>
       </Modal>
-
+      {/*MODAL GRAFICOS */}
+      <Modal
+        visible={ModalGrafico}
+        transparent={false}
+      >
+        <View>
+          <Text>oiii</Text>
+        </View>
+      </Modal>
       <Text style={styles.titulo}></Text>
       {data.length > 0 && plantaData.length > 0 ? (
         <>
