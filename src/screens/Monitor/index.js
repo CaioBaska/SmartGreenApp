@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Modal, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Modal, Alert, ScrollView, Dimensions } from 'react-native';
 import { TextInputMask } from 'react-native-masked-text';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { styles } from './styles'
@@ -8,6 +8,9 @@ import { Button } from '../../components/Button';
 import { Table, Row, Rows } from 'react-native-table-component';
 import { Input } from '../../components/Input';
 import RNPickerSelect from 'react-native-picker-select';
+import Blink from '../../components/Blink'
+import { ImageBackground } from 'react-native-web';
+
 
 export function Monitor({ navigation }) {
 
@@ -51,6 +54,9 @@ export function Monitor({ navigation }) {
   const [ModalGrafico, setModalGrafico] = useState(false);
 
   const [imagemSelecionada, setImagemSelecionada] = useState(null);
+  const [edicaoSelecionada, setEdicaoSelecionada] = useState('');
+  const [infoSelecionadas, SetInfoSelecionadas] = useState('');
+
   const [nomePlantaSelecionada, setNomePlantaSelecionada] = useState('');
   const [mensagemMQTT, setMensagemMQTT] = React.useState("liga");
 
@@ -72,6 +78,7 @@ export function Monitor({ navigation }) {
   const [phEditada, setPhEditada] = useState('')
   const [potassioEditada, setPotassioEditada] = useState('')
   const [luminosidadeEditada, setLuminosidadeEditada] = useState('')
+  const [nomeEditado, setNomeEditado] = useState('')
 
   const [intervalId, setIntervalId] = React.useState(null);
 
@@ -80,7 +87,10 @@ export function Monitor({ navigation }) {
   const [destinatarioEmail, setDestinatarioEmail] = useState('')
   const [infoEnvioEmail, setInfoEnvioEmail] = useState('')
 
-  const [plantasModificadas,setPlantasModificadas]=useState('teste','testeee')
+  const [plantasModificadas, setPlantasModificadas] = useState('aaaa')
+  const plantasItems = Array.isArray(plantasModificadas)
+    ? plantasModificadas.map(planta => ({ label: planta, value: planta }))
+    : [];
 
   const placeholder = {
     label: 'Selecione uma opção Personalizada',
@@ -96,7 +106,7 @@ export function Monitor({ navigation }) {
   }, []);
 
   useEffect(() => {
-    if(modalVisible==true){
+    if (modalVisible == true) {
       console.log('effect carregado')
       buscaDadosPlantas();
       const interval = setInterval(buscaDadosPlantas, 1000);
@@ -106,7 +116,7 @@ export function Monitor({ navigation }) {
 
   //ATIVAR NOVAMENTE
   useEffect(() => {
-    if (!modalVisible && !modalCriaPlanta && !modalDigitaRelatorio && !modalGeraRelatorio && !modalEnviaRelatorio) {
+    if (!modalVisible && !modalCriaPlanta && !modalDigitaRelatorio && !modalGeraRelatorio && !modalEnviaRelatorio && !fosforoAlertVisible) {
       const alertTimeout = setTimeout(() => {
         setFosforoAlertVisible(true);
         setNitrogenioAlertVisible(true);
@@ -114,12 +124,23 @@ export function Monitor({ navigation }) {
         setUmidadeAlertVisible(true);
         setTemperaturaAlertVisible(true);
         setPotassioAlertVisible(true);
-        // setLuminosidadeAlertVisible(true);
-      }, 300000); // 60000 milissegundos = 1 minuto
+        setLuminosidadeAlertVisible(true);
+      }, 10000); // 60000 milissegundos = 1 minuto
 
       return () => clearTimeout(alertTimeout);
     }
-  }, [modalVisible, modalCriaPlanta, fosforoAlertVisible,modalDigitaRelatorio,modalGeraRelatorio,modalEnviaRelatorio]);
+  }, [modalVisible, modalCriaPlanta, modalDigitaRelatorio, modalGeraRelatorio, modalEnviaRelatorio, fosforoAlertVisible]);
+
+
+  useEffect(() => {
+    const alertTimeout = setTimeout(() => {
+      setUmidadeAlertVisible(true);
+      // setLuminosidadeAlertVisible(true);
+    }, 30000); // 60000 milissegundos = 1 minuto
+
+    return () => clearTimeout(alertTimeout);
+
+  })
 
 
   const handleMQTTButtonPress = async () => {
@@ -129,6 +150,9 @@ export function Monitor({ navigation }) {
         method: 'GET',
       });
       console.log("Mensagem MQTT Enviada Ligar")
+      console.log(fosforoNumerico)
+      console.log(plantaData[0].fosforo)
+      console.log(fosforoAlertVisible)
     }
     catch {
       // console.log(mensagemMQTT)
@@ -184,9 +208,9 @@ export function Monitor({ navigation }) {
       if (!response.ok) {
         throw new Error(`Erro ao buscar os valores Monitorados`);
       }
-      else{
-        const json = await response.json(); 
-        setData(json); 
+      else {
+        const json = await response.json();
+        setData(json);
       }
 
     } catch (error) {
@@ -196,14 +220,14 @@ export function Monitor({ navigation }) {
 
   const buscaDadosPlantas = async () => {
     try {
-      const response = await fetch('https://smartgreen.azurewebsites.net/Monitoramento/obterTodasPlantas');
+      const response = await fetch('https://smartgreen.azurewebsites.net/Plantas/obterTodasPlantasPersonalizadas');
 
       if (!response.ok) {
         throw new Error(`Não foi possível buscar os dados Personalizados`);
       }
-      else{
-        const json = await response.json(); 
-        setPlantasModificadas(json); 
+      else {
+        const json = await response.json();
+        setPlantasModificadas(json);
       }
 
     } catch (error) {
@@ -214,30 +238,65 @@ export function Monitor({ navigation }) {
   const handleIniciarMonitoramento = async () => {
     try {
       console.log(imagemSelecionada);
-      if(imagemSelecionada!=null){
-      
+      console.log(edicaoSelecionada);
+      if (imagemSelecionada !== null && edicaoSelecionada !== null) {
+        // Ambos foram selecionados, emita um aviso ou tome a ação apropriada
+        SetInfoSelecionadas('Selecione apenas uma opção: imagem ou valor do Editado.');
+        return;
+      }
+      if (imagemSelecionada == null && edicaoSelecionada == null) {
+
+        SetInfoSelecionadas('Selecione uma opção para iniciar o monitoramento');
+        return;
+
+      }
+      if (imagemSelecionada !== null) {
+
         const response = await fetch(`https://smartgreen.azurewebsites.net/Plantas/obterDadosPlantas?nomePlanta=${imagemSelecionada}`, {
-        method: 'GET', // Alterado para POST
-      });
+          method: 'GET', // Alterado para POST
+        });
 
-      if (!response.ok) {
-        throw new Error(`Erro na solicitação: ${response.status} - ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`Erro na solicitação: ${response.status} - ${response.statusText}`);
+        }
+
+        const text = await response.text();
+
+        if (!text) {
+          throw new Error('Resposta vazia ou não no formato JSON esperado.');
+        }
+
+        const json = JSON.parse(text);
+
+        SetPlantaData(json);
+        setHabilitaEnvioMQTT(true);
+        setModalVisible(false);
+        SetInfoSelecionadas('');
+
+      }
+      else {
+        const response = await fetch(`https://smartgreen.azurewebsites.net/Plantas/obterDadosPlantas?nomePlanta=${edicaoSelecionada}`, {
+          method: 'GET', // Alterado para POST
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro na solicitação: ${response.status} - ${response.statusText}`);
+        }
+
+        const text = await response.text();
+
+        if (!text) {
+          throw new Error('Resposta vazia ou não no formato JSON esperado.');
+        }
+
+        const json = JSON.parse(text);
+
+        SetPlantaData(json);
+        setHabilitaEnvioMQTT(true);
+        setModalVisible(false);
+        SetInfoSelecionadas('');
       }
 
-      const text = await response.text();
-
-      if (!text) {
-        throw new Error('Resposta vazia ou não no formato JSON esperado.');
-      }
-
-      const json = JSON.parse(text);
-
-      SetPlantaData(json);
-      setHabilitaEnvioMQTT(true);
-      setModalVisible(false);
-
-      }
-      
 
     } catch (error) {
       console.error(error);
@@ -427,6 +486,7 @@ export function Monitor({ navigation }) {
 
       const jsonData = await response.json();
 
+
       // Transforme os dados para o formato desejado
       const formattedData = jsonData.map(item => {
         const valuesArray = Object.values(item);
@@ -441,7 +501,7 @@ export function Monitor({ navigation }) {
 
       // Atualize o estado com os dados formatados do relatório
       setRelatorioData(formattedData);
-
+      //console.log(graficoData)
       // Abra o modal do relatório
       setModalGeraRelatorio(true);
 
@@ -453,10 +513,6 @@ export function Monitor({ navigation }) {
   const handleFechaRelatorio = () => {
     setModalGeraRelatorio(false);
     setModalDigitaRelatorio(false);
-  }
-
-  const handleAbreGraficos = () => {
-    setModalGrafico(true);
   }
 
   const handleAbreEnviarRelatorio = () => {
@@ -474,12 +530,15 @@ export function Monitor({ navigation }) {
         return;
       }
 
-      if (destinatarioEmail.length<=0){
+      if (destinatarioEmail.length <= 0) {
         setInfoEnvioEmail("Por favor, forneça um email antes de enviar");
         return;
       }
 
-      const url = `https://smartgreen.azurewebsites.net/Monitoramento/enviarRelatorioEmail?dataInicial=${dataInicial}&dataFinal=${dataFinal}&destinatario=${destinatarioEmail}`;
+      const mensagem = `${dataInicial},${dataFinal},${destinatarioEmail}`;
+      // const url = `https://smartgreen.azurewebsites.net/Monitoramento/mandarRelatorioMqtt?dataInicial=${dataInicial}&dataFinal=${dataFinal}&destinatario=${destinatarioEmail}`;
+
+      const url = `https://smartgreen.azurewebsites.net/Monitoramento/mandarRelatorioMqtt?mensagem=${mensagem}`;
 
       const response = await fetch(url);
 
@@ -527,20 +586,28 @@ export function Monitor({ navigation }) {
       // !isNumeric(luminosidadeEditada)
     ) {
       // Preencha a mensagem de erro
-      setInfoCadastroPlanta("Por favor, preencha todos os campos com valores numéricos antes de iniciar o monitoramento.");
+      setInfoCadastroPlanta("Por favor, preencha todos os campos com valores numéricos antes de editar o monitoramento.");
       return; // Encerre a execução aqui para não continuar com a lógica principal
     }
 
-    try {
-      // Construa a URL com os parâmetros
-      const url = `https://smartgreen.azurewebsites.net/Plantas/cadastrarPlanta?nomePlanta=EDIT&temperatura=${temperaturaEditada}&umidade=${umidadeEditada}&nitrogenio=${nitrogenioEditada}&fosforo=${fosforoEditada}&PH=${phEditada}&potassio=${potassioEditada}&luminosidade=0`;
+    if (nomeEditado.length <= 0) {
+      setInfoCadastroPlanta("Para prosseguir é necessário colocar um nome");
+      return;
+    }
 
-      // Realize a chamada à API
+    try {
+
+      const url = `https://smartgreen.azurewebsites.net/Plantas/cadastrarPlanta?nomePlanta=${nomeEditado}&temperatura=${temperaturaEditada}&umidade=${umidadeEditada}&nitrogenio=${nitrogenioEditada}&fosforo=${fosforoEditada}&PH=${phEditada}&potassio=${potassioEditada}&luminosidade=0`;
+
       const response = await fetch(url, {
-        method: 'GET', // ou 'GET', dependendo do método suportado pelo endpoint
+        method: 'GET',
       });
 
+
       if (response.ok) {
+
+        //DESATIVADO PARA CRIAR E VOLTAR PARA TELA DE EDITAR PLANTA
+        setModalCriaPlanta(false);
 
         const url = "https://smartgreen.azurewebsites.net/Plantas/obterDadosPlantas?nomePlanta=EDIT"
 
@@ -548,31 +615,34 @@ export function Monitor({ navigation }) {
           method: 'GET', // ou 'GET', dependendo do método suportado pelo endpoint
         });
 
-        if (response.ok) {
+        // if (response.ok) {
 
-          const text = await response.text();
+        //   const text = await response.text();
 
-          if (!text) {
-            throw new Error('Resposta vazia ou não no formato JSON esperado.');
-          }
+        //   if (!text) {
+        //     throw new Error('Resposta vazia ou não no formato JSON esperado.');
+        //   }
 
-          const json = JSON.parse(text);
+        //   const json = JSON.parse(text);
 
-          SetPlantaData(json);
-          setHabilitaEnvioMQTT(true);
-          setModalCriaPlanta(false);
-          setModalVisible(false);
+        //   SetPlantaData(json);
+        //   setHabilitaEnvioMQTT(true);
+        //   setModalCriaPlanta(false);
+        //   setModalVisible(false);
 
 
-        }
+        // }
 
-        else {
-          throw new Error(`Erro na solicitação: ${response.status} - ${response.statusText}`);
-        }
+        // else {
+        //   throw new Error(`Erro na solicitação: ${response.status} - ${response.statusText}`);
+        // }
 
         setInfoCadastroPlanta("Monitoramento iniciado com sucesso!");
 
-      } else {
+      }
+
+
+      else {
         throw new Error(`Erro na solicitação: ${response.status} - ${response.statusText}`);
       }
 
@@ -600,6 +670,46 @@ export function Monitor({ navigation }) {
     setModalVisible(true);
   }
 
+  const botaoExcluiMonitoramentoEditado = async () => {
+    setInfoCadastroPlanta('')
+    console.log(nomeEditado)
+    if (nomeEditado !== 'TOMATE' && nomeEditado !== 'REPOLHO' &&
+      nomeEditado !== 'BATATA' && nomeEditado !== 'HORTELA') {
+
+      if (nomeEditado !== '') {
+
+        const url = `https://smartgreen.azurewebsites.net/Plantas/obterDadosPlantas?nomePlanta=${nomeEditado}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.length > 0) {
+
+        }
+        else {
+          setInfoCadastroPlanta('Não existe nenhum monitoramento com esse nome')
+        }
+
+
+      }
+      else {
+        setInfoCadastroPlanta('Favor preencher o nome do Monitoramento a ser Excluído')
+      }
+
+    } else {
+      setInfoCadastroPlanta('Não é possível deletar os valores padrões')
+    }
+
+  }
+
+
+  const chartConfig = {
+    backgroundGradientFrom: '#fff',
+    backgroundGradientTo: '#fff',
+    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    style: { borderRadius: 16 },
+  };
+
   const widthArr = [100, 38, 38, 38, 38, 38, 38, 38];
 
   return (
@@ -614,7 +724,7 @@ export function Monitor({ navigation }) {
           <View style={styles.rowModal}>
             <TouchableOpacity
               style={[styles.barContainer2, imagemSelecionada === 'HORTELA' && styles.imagemSelecionada]}
-              onPress={() => setImagemSelecionada('HORTELA')}
+              onPress={() => setImagemSelecionada(prevState => prevState === 'HORTELA' ? null : 'HORTELA')}
             >
               <Image
                 style={styles.image}
@@ -624,7 +734,7 @@ export function Monitor({ navigation }) {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.barContainer, imagemSelecionada === 'TOMATE' && styles.imagemSelecionada]}
-              onPress={() => setImagemSelecionada('TOMATE')}>
+              onPress={() => setImagemSelecionada(prevState => prevState === 'TOMATE' ? null : 'TOMATE')}>
               <Image
                 style={styles.image}
                 resizeMode='contain'
@@ -634,7 +744,7 @@ export function Monitor({ navigation }) {
           <View style={styles.rowModal}>
             <TouchableOpacity
               style={[styles.barContainer2, imagemSelecionada === 'REPOLHO' && styles.imagemSelecionada]}
-              onPress={() => setImagemSelecionada('REPOLHO')}
+              onPress={() => setImagemSelecionada(prevState => prevState === 'REPOLHO' ? null : 'REPOLHO')}
             >
               <Image
                 style={styles.image}
@@ -644,34 +754,43 @@ export function Monitor({ navigation }) {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.barContainer, imagemSelecionada === 'BATATA' && styles.imagemSelecionada]}
-              onPress={() => setImagemSelecionada('BATATA')}>
+              onPress={() => setImagemSelecionada(prevState => prevState === 'BATATA' ? null : 'BATATA')}>
               <Image
                 style={styles.image}
                 resizeMode='contain'
                 source={require('../../assets/images/BATATA.png')} />
             </TouchableOpacity>
           </View>
-          <View style={styles.btnEditarPlanta}>
-            <TouchableOpacity onPress={BotaoAbreTelaEditar} >
-              <FontAwesome5 name="edit" size={50} color="black" />
-            </TouchableOpacity>
-          </View>
-          <View>
-          <RNPickerSelect
-            onValueChange={(value) => console.log(value)}
-            placeholder={placeholder}
-            items={[
-                { label: 'Football', value: 'football' },
-                { label: 'Baseball', value: 'baseball' },
-                { label: 'Hockey', value: 'hockey' },
-            ]}
-        />
-          </View>
-          <View style={styles.btnIniciar}>
-            <Button
-              title="Iniciar Monitoramento"
-              onPress={handleIniciarMonitoramento}
+          <View style={styles.monitorPicker}>
+            <RNPickerSelect
+              style={styles.pickerStyle}
+              onValueChange={(x) => setEdicaoSelecionada(x)}
+              placeholder={placeholder}
+              items={plantasItems}
             />
+          </View>
+          <View style={styles.infoSelecionadasStyle}>
+            <Text style={styles.Info}>
+              {infoSelecionadas}
+            </Text>
+          </View>
+          <View style={styles.editMenuButtons}>
+            <View>
+              <Button
+                title="Iniciar Monitoramento"
+                onPress={handleIniciarMonitoramento}
+                color='#27b300'
+
+              />
+            </View>
+            <View>
+              <Button
+                title="Editar Monitoramento"
+                onPress={BotaoAbreTelaEditar}
+                color='#27b300'
+              >
+              </Button>
+            </View>
           </View>
         </View>
       </Modal>
@@ -682,42 +801,51 @@ export function Monitor({ navigation }) {
       >
         <View>
 
-          <Text style={styles.tituloRelatorio}>Gerar Relatório</Text>
+          <View style={styles.center}>
+            <Text style={styles.tituloRelatorio}>Gerar Relatório</Text>
+          </View>
 
+          <View style={styles.GeraRelatorioinput}>
+            <Text style={styles.texto}>Data Inicial</Text>
+            <TextInputMask
+              style={styles.txtInpuMask}
+              type={'datetime'}
+              options={{
+                format: 'DD/MM/YYYY HH:mm:ss',
+              }}
+              placeholder="Digite a Data Inicial (DD/MM/YYYY HH:mm:ss)"
+              value={date}
+              onChangeText={x => setDataInicial(x)}
+              keyboardType="numeric"
+            />
 
-          <Text style={styles.texto}>Data Inicial</Text>
-          <TextInputMask
-            style={styles.txtInpuMask}
-            type={'datetime'}
-            options={{
-              format: 'DD/MM/YYYY HH:mm:ss',
-            }}
-            placeholder="Digite a Data Inicial (DD/MM/YYYY HH:mm:ss)"
-            value={date}
-            onChangeText={x => setDataInicial(x)}
-            keyboardType="numeric"
-          />
-
-          <Text style={styles.texto}>Data Inicial</Text>
-          <TextInputMask
-            style={styles.txtInpuMask}
-            type={'datetime'}
-            options={{
-              format: 'DD/MM/YYYY HH:mm:ss',
-            }}
-            placeholder="Digite a Data Final (DD/MM/YYYY HH:mm:ss)"
-            value={date}
-            onChangeText={x => setDataFinal(x)}
-            keyboardType="numeric"
-          />
+            <Text style={styles.texto}>Data Final</Text>
+            <TextInputMask
+              style={styles.txtInpuMask}
+              type={'datetime'}
+              options={{
+                format: 'DD/MM/YYYY HH:mm:ss',
+              }}
+              placeholder="Digite a Data Final (DD/MM/YYYY HH:mm:ss)"
+              value={date}
+              onChangeText={x => setDataFinal(x)}
+              keyboardType="numeric"
+            />
+          </View>
 
           {/* Botão para gerar relatório */}
-          <View style={styles.botoesRelatorio}>
-            <View style={styles.btnIniciar}>
-              <Button title="Gerar Relatório" onPress={handleGeraRelatorio} />
+          <View style={styles.botoesGeraRelatorio}>
+            <View>
+              <Button title="Gerar Relatório"
+                onPress={handleGeraRelatorio}
+                color='#27b300'
+              />
             </View>
-            <View style={styles.btnIniciar}>
-              <Button title="Voltar" onPress={handleFechaRelatorio}></Button>
+            <View>
+              <Button title="Voltar"
+                onPress={handleFechaRelatorio}
+                color='#27b300'
+              />
             </View>
           </View>
         </View>
@@ -730,9 +858,6 @@ export function Monitor({ navigation }) {
 
         <View style={styles.container}>
           <View style={styles.btnRetornaMonitoramento}>
-            <TouchableOpacity onPress={handleAbreGraficos}>
-              <FontAwesome5 name='chart-line' size={30} color="black" />
-            </TouchableOpacity>
             <TouchableOpacity onPress={fecharModaisRelatorio}>
               <FontAwesome5 name='home' size={30} color="black" />
             </TouchableOpacity>
@@ -764,23 +889,23 @@ export function Monitor({ navigation }) {
             >
             </Input>
             <Text style={styles.Info}>
-            {infoEnvioEmail}
-          </Text>
+              {infoEnvioEmail}
+            </Text>
           </View>
           <View style={styles.botoesEnviarEmail}>
             <View>
               <Button
                 title='Enviar'
                 onPress={handleEnviarRelatorioEmail}
-              >
-              </Button>
+                color='#27b300'
+              />
             </View>
             <View>
               <Button
                 title='Voltar'
                 onPress={fecharModaisRelatorio}
-              >
-              </Button>
+                color='#27b300'
+              />
             </View>
           </View>
         </View>
@@ -791,8 +916,9 @@ export function Monitor({ navigation }) {
         transparent={false}
       >
         <View style={styles.container}>
-          <View><Text style={styles.txtEditarPlanta}>Criar Monitoramento Personalizado</Text></View>
+          <View><Text style={styles.txtEditarPlanta}>Editar Monitoramento Personalizado</Text></View>
 
+          <Input placeholder='Digite o Nome Personalizado' onChangeText={x => setNomeEditado(x)} />
           <Input placeholder='Digite a Temperatura' onChangeText={x => setTemperaturaEditada(x)} />
           <Input placeholder='Digite a Umidade mínima' onChangeText={x => setUmidadeEditada(x)} />
           <Input placeholder='Digite o Nitrogenio' onChangeText={x => setNitrogenioEditada(x)} />
@@ -800,31 +926,32 @@ export function Monitor({ navigation }) {
           <Input placeholder='Digite o PH' onChangeText={x => setPhEditada(x)} />
           <Input placeholder='Digite o Potassio' onChangeText={x => setPotassioEditada(x)} />
           {/* <Input placeholder='Digite a Luminosidade' onChangeText={x => setLuminosidadeEditada(x)} /> */}
-          <Text style={styles.Info}>
-            {InfoCadastroPlanta}
-          </Text>
+          <View style={styles.infoCadastroPlantaStyle}>
+            <Text style={styles.Info}>
+              {InfoCadastroPlanta}
+            </Text>
+          </View>
           <View style={styles.btnCriarPlanta}>
             <Button
               title='Iniciar'
+              color='#27b300'
               onPress={botaoIniciaMonitoramentoEditado}
             ></Button>
             <Button
               title='Voltar'
+              color='#27b300'
               onPress={botaoFechaMonitoramentoEditado}
+            />
+            <Button
+              color='#dc2626'
+              title='Excluir'
+              onPress={botaoExcluiMonitoramentoEditado}
             ></Button>
           </View>
 
         </View>
       </Modal>
-      {/*MODAL GRAFICOS */}
-      <Modal
-        visible={ModalGrafico}
-        transparent={false}
-      >
-        <View>
-          <Text>oiii</Text>
-        </View>
-      </Modal>
+      {/*MONITORAMENTO PRINCIPAL*/}
       <Text style={styles.titulo}></Text>
       {data.length > 0 && plantaData.length > 0 ? (
         <>
@@ -832,73 +959,81 @@ export function Monitor({ navigation }) {
             <View style={styles.barContainer2}>
               <Text style={styles.texto}>Temperatura</Text>
               <Text style={styles.texto}>Recomendada: {plantaData[0].temperatura}</Text>
-              <AnimatedCircularProgress
-                size={100}
-                width={20}
-                fill={getProgressBarFill(data[0].temperatura, 0, 40)}
-                tintColor={getProgressBarColorTemperatura(data[0].temperatura)}
-                backgroundColor="#3d5875"
-              >
-                {(fill) => (
-                  <View>
-                    <Text style={styles.textoCirculo}> {data[0].temperatura}</Text>
-                  </View>
-                )}
-              </AnimatedCircularProgress>
+              <Blink duration={500} value1={data[0].temperatura} value2={plantaData[0].temperatura} >
+                <AnimatedCircularProgress
+                  size={100}
+                  width={20}
+                  fill={getProgressBarFill(data[0].temperatura, 0, 40)}
+                  tintColor={getProgressBarColorTemperatura(data[0].temperatura)}
+                  backgroundColor="#3d5875"
+                >
+                  {(fill) => (
+                    <View>
+                      <Text style={styles.textoCirculo}> {data[0].temperatura}</Text>
+                    </View>
+                  )}
+                </AnimatedCircularProgress>
+              </Blink>
             </View>
             <View style={styles.barContainer}>
               <Text style={styles.texto}>pH</Text>
               <Text style={styles.texto}>Recomendada: {plantaData[0].ph}</Text>
-              <AnimatedCircularProgress
-                size={100}
-                width={20}
-                fill={getProgressBarFillPH(data[0].ph)}
-                tintColor={getProgressBarColorPH(data[0].ph)}
-                backgroundColor="#3d5875"
-              >
-                {(fill) => (
-                  <View>
-                    <Text style={styles.textoCirculo}> {data[0].ph}</Text>
-                  </View>
-                )}
-              </AnimatedCircularProgress>
+              <Blink duration={500} value1={data[0].ph} value2={plantaData[0].ph} >
+                <AnimatedCircularProgress
+                  size={100}
+                  width={20}
+                  fill={getProgressBarFillPH(data[0].ph)}
+                  tintColor={getProgressBarColorPH(data[0].ph)}
+                  backgroundColor="#3d5875"
+                >
+                  {(fill) => (
+                    <View>
+                      <Text style={styles.textoCirculo}> {data[0].ph}</Text>
+                    </View>
+                  )}
+                </AnimatedCircularProgress>
+              </Blink>
             </View>
           </View>
           <View style={styles.row}>
             <View style={styles.barContainer2}>
               <Text style={styles.texto}>Umidade</Text>
               <Text style={styles.texto}>Recomendada: {plantaData[0].umidade}</Text>
-              <AnimatedCircularProgress
-                size={100}
-                width={20}
-                fill={umidadeNumerica}
-                tintColor={getProgressBarColorUmidade(data[0].umidade)}
-                backgroundColor="#3d5875"
-              >
-                {(fill) => (
-                  <View>
-                    <Text style={styles.textoCirculo}> {data[0].umidade}</Text>
-                  </View>
-                )}
-              </AnimatedCircularProgress>
+              <Blink duration={500} value1={data[0].umidade} value2={plantaData[0].umidade} >
+                <AnimatedCircularProgress
+                  size={100}
+                  width={20}
+                  fill={umidadeNumerica}
+                  tintColor={getProgressBarColorUmidade(data[0].umidade)}
+                  backgroundColor="#3d5875"
+                >
+                  {(fill) => (
+                    <View>
+                      <Text style={styles.textoCirculo}> {data[0].umidade}</Text>
+                    </View>
+                  )}
+                </AnimatedCircularProgress>
+              </Blink>
             </View>
             <View style={styles.barContainer}>
               {/* <Text style={styles.texto}>Fósforo: {data[0].fosforo}</Text> */}
               <Text style={styles.texto}>Fosforo</Text>
               <Text style={styles.texto}>Recomendada: {plantaData[0].fosforo}</Text>
-              <AnimatedCircularProgress
-                size={100}
-                width={20}
-                fill={getProgressBarFill(data[0].fosforo, 0, 100)}
-                tintColor={getProgressBarColor(data[0].fosforo)}
-                backgroundColor="#3d5875"
-              >
-                {(fill) => (
-                  <View>
-                    <Text style={styles.textoCirculo}> {data[0].fosforo}</Text>
-                  </View>
-                )}
-              </AnimatedCircularProgress>
+              <Blink duration={500} value1={data[0].fosforo} value2={plantaData[0].fosforo} >
+                <AnimatedCircularProgress
+                  size={100}
+                  width={20}
+                  fill={getProgressBarFill(data[0].fosforo, 0, 100)}
+                  tintColor={getProgressBarColor(data[0].fosforo)}
+                  backgroundColor="#3d5875"
+                >
+                  {(fill) => (
+                    <View>
+                      <Text style={styles.textoCirculo}> {data[0].fosforo}</Text>
+                    </View>
+                  )}
+                </AnimatedCircularProgress>
+              </Blink>
             </View>
           </View>
           <View style={styles.row}>
@@ -906,37 +1041,41 @@ export function Monitor({ navigation }) {
               {/* <Text style={styles.texto}>Nitrogênio: {data[0].nitrogenio}</Text> */}
               <Text style={styles.texto}>Nitrogenio</Text>
               <Text style={styles.texto}>Recomendada: {plantaData[0].nitrogenio}</Text>
-              <AnimatedCircularProgress
-                size={100}
-                width={20}
-                fill={getProgressBarFill(data[0].nitrogenio, 0, 100)}
-                tintColor={getProgressBarColor(data[0].nitrogenio)}
-                backgroundColor="#3d5875"
-              >
-                {(fill) => (
-                  <View>
-                    <Text style={styles.textoCirculo}> {data[0].nitrogenio}</Text>
-                  </View>
-                )}
-              </AnimatedCircularProgress>
+              <Blink duration={500} value1={data[0].nitrogenio} value2={plantaData[0].nitrogenio} >
+                <AnimatedCircularProgress
+                  size={100}
+                  width={20}
+                  fill={getProgressBarFill(data[0].nitrogenio, 0, 100)}
+                  tintColor={getProgressBarColor(data[0].nitrogenio)}
+                  backgroundColor="#3d5875"
+                >
+                  {(fill) => (
+                    <View>
+                      <Text style={styles.textoCirculo}> {data[0].nitrogenio}</Text>
+                    </View>
+                  )}
+                </AnimatedCircularProgress>
+              </Blink>
             </View>
             <View style={styles.barContainer}>
               {/* <Text style={styles.texto}>Potássio: {data[0].potassio}</Text> */}
               <Text style={styles.texto}>Potássio</Text>
               <Text style={styles.texto}>Recomendada: {plantaData[0].potassio}</Text>
-              <AnimatedCircularProgress
-                size={100}
-                width={20}
-                fill={getProgressBarFill(data[0].potassio, 0, 100)}
-                tintColor={getProgressBarColor(data[0].potassio)}
-                backgroundColor="#3d5875"
-              >
-                {(fill) => (
-                  <View>
-                    <Text style={styles.textoCirculo}> {data[0].potassio}</Text>
-                  </View>
-                )}
-              </AnimatedCircularProgress>
+              <Blink duration={500} value1={data[0].potassio} value2={plantaData[0].potassio} >
+                <AnimatedCircularProgress
+                  size={100}
+                  width={20}
+                  fill={getProgressBarFill(data[0].potassio, 0, 100)}
+                  tintColor={getProgressBarColor(data[0].potassio)}
+                  backgroundColor="#3d5875"
+                >
+                  {(fill) => (
+                    <View>
+                      <Text style={styles.textoCirculo}> {data[0].potassio}</Text>
+                    </View>
+                  )}
+                </AnimatedCircularProgress>
+              </Blink>
             </View>
           </View>
           <View >
@@ -973,126 +1112,9 @@ export function Monitor({ navigation }) {
               <FontAwesome5 name="calendar-alt" size={50} color="black" />
             </TouchableOpacity>
           </View>
-          {/* {console.log(umidadeNumerica, parseFloat(plantaData[0].umidade.replace(',', '.')))} */}
-          {/* Verificar se a umidade atual é maior que a recomendada */}
-          {umidadeNumerica > parseFloat(plantaData[0].umidade.replace(',', '.')) && umidadeAlertVisible && (
-            Alert.alert(
-              'Alerta',
-              'A umidade atual está acima da recomendada!',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                    setUmidadeAlertVisible(false); // Esconde o alerta após o OK ser pressionado
-                  },
-                },
-              ],
-              { cancelable: false }
-            )
-          )}
 
-          {potassioNumerico > parseFloat(plantaData[0].potassio.replace(',', '.')) && potassioAlertVisible && (
-            Alert.alert(
-              'Alerta',
-              'O Potássio atual está acima do recomendado!',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                    setPotassioAlertVisible(false); // Esconde o alerta após o OK ser pressionado
-                  },
-                },
-              ],
-              { cancelable: false }
-            )
-          )}
 
-          {fosforoNumerico > parseFloat(plantaData[0].fosforo.replace(',', '.')) && fosforoAlertVisible && (
-            Alert.alert(
-              'Alerta',
-              'O Fósforo atual está acima do recomendado!',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                    setFosforoAlertVisible(false); // Esconde o alerta após o OK ser pressionado
-                  },
-                },
-              ],
-              { cancelable: false }
-            )
-          )}
 
-          {temperaturaNumerica > parseFloat(plantaData[0].temperatura.replace(',', '.')) && temperaturaAlertVisible && (
-            Alert.alert(
-              'Alerta',
-              'A temperatura atual está acima da recomendada!',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                    setTemperaturaAlertVisible(false); // Esconde o alerta após o OK ser pressionado
-                  },
-                },
-              ],
-              { cancelable: false }
-            )
-          )}
-
-          {phNumerico > parseFloat(plantaData[0].ph.replace(',', '.')) && phAlertVisible && (
-            Alert.alert(
-              'Alerta',
-              'O PH atual está acima da recomendado!',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                    setPhAlertVisible(false); // Esconde o alerta após o OK ser pressionado
-                  },
-                },
-              ],
-              { cancelable: false }
-            )
-          )}
-
-          {nitrogenioNumerica > parseFloat(plantaData[0].nitrogenio.replace(',', '.')) && nitrogenioAlertVisible && (
-            Alert.alert(
-              'Alerta',
-              'O Nitrogenio atual está acima do recomendado!',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                    setNitrogenioAlertVisible(false); // Esconde o alerta após o OK ser pressionado
-                  },
-                },
-              ],
-              { cancelable: false }
-            )
-          )}
-
-          {/* {luminosidadeNumerica > parseFloat(plantaData[0].luminosidade.replace(',', '.')) && luminosidadeAlertVisible && (
-            Alert.alert(
-              'Alerta',
-              'A luminosidade atual está acima da recomendada!',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                    setLuminosidadeAlertVisible(false); // Esconde o alerta após o OK ser pressionado
-                  },
-                },
-              ],
-              { cancelable: false }
-            )
-          )} */}
 
         </>
       ) : (

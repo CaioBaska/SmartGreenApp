@@ -102,11 +102,11 @@ export function Login({ navigation }) {
       setInfoCadastro('A senha deve conter mais de 8 caracteres e as senhas devem coincidir');
     } else {
       setInfoCadastro('');
-  
+
       try {
         // Verifica se o login já existe
         const verificaLoginResponse = await fetch(`https://smartgreen.azurewebsites.net/Usuarios/verificaLogin?login=${createLogin}`);
-  
+
         if (verificaLoginResponse.status === 200) {
           // Já existe um usuário com este login
           setInfoCadastro('Já existe um usuário com este login. Escolha outro.');
@@ -119,7 +119,7 @@ export function Login({ navigation }) {
             },
             body: JSON.stringify({ nome: createUser, login: createLogin, senha: createPassword }),
           });
-  
+
           if (response.ok) {
             setModalActive(false);
           } else {
@@ -133,7 +133,7 @@ export function Login({ navigation }) {
       }
     }
   }
-  
+
   async function VerificaAlteraSenha() {
     try {
       if (newLogin.length <= 0 || newPassword.length <= 0 || newConfirmPassword.length <= 0) {
@@ -232,10 +232,12 @@ export function Login({ navigation }) {
         <Button
           title='Entrar'
           onPress={VerificaLogin}
+          color='#27b300'
         />
         <Button
           title='Cadastre-se '
           onPress={handlePressCriarConta}
+          color='#27b300'
         />
       </View>
       <Modal
@@ -277,8 +279,13 @@ export function Login({ navigation }) {
             <Button
               title='Confirmar'
               onPress={VerificaCadastro}
+              color='#27b300'
             />
-            <Button onPress={handlePressVoltar} title="Voltar" />
+            <Button
+              onPress={handlePressVoltar}
+              title="Voltar"
+              color='#27b300'
+            />
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -311,8 +318,12 @@ export function Login({ navigation }) {
             <Button
               title='Confirmar'
               onPress={VerificaAlteraSenha}
+              color='#27b300'
             />
-            <Button onPress={handlePressVoltar2} title="Voltar" />
+            <Button onPress={handlePressVoltar2}
+              title="Voltar"
+              color='#27b300'
+            />
           </View>
         </KeyboardAvoidingView>
       </Modal>

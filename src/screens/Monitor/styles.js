@@ -1,6 +1,9 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+  center: {
+
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -42,8 +45,8 @@ export const styles = StyleSheet.create({
     paddingTop: 80,
   },
   image: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
   },
   modalContainer: {
     flex: 1,
@@ -71,7 +74,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     display: 'flex',
-    marginTop: 80,
+    marginTop: 60,
     //marginBottom:0,
   },
   imagemSelecionada: {
@@ -80,18 +83,18 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
   },
   btnIniciar: {
-    marginTop: 10,
+    marginTop: 13,
     marginLeft: 50,
     marginRight: 50,
     borderRadius: 10,
     alignItems: 'center',
     backgroundColor: '#c9e265',
     justifyContent: 'space-between',
-    
+
   },
   tituloModal: {
-    marginBottom: 40,
-    marginTop: 40,
+    //marginBottom: 20,
+    marginTop: 60,
     marginLeft: 40,
     fontSize: 20,
     fontWeight: 'bold',
@@ -106,15 +109,22 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
     height: 45,
     fontSize: 18,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
   tituloRelatorio: {
     marginBottom: 40,
-    marginTop: 60,
+    marginTop: 100,
     marginLeft: 130,
     fontSize: 20,
     fontWeight: 'bold',
-  }, container: {
+  }, GeraRelatorioinput: {
+    marginTop: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+  container: {
     flex: 1,
     padding: 16,
     paddingTop: 20,
@@ -127,8 +137,8 @@ export const styles = StyleSheet.create({
   btnRetornaMonitoramento: {
     marginLeft: 175,
     marginBottom: 10,
-    marginLeft:90,
-    marginRight:90,
+    marginLeft: 90,
+    marginRight: 90,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -163,16 +173,23 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   Info: {
-    marginTop:10,
-    marginBottom:20,
-    color: 'red'
+    color: 'red',
   },
-  barContainerCentro:{
+  infoSelecionadasStyle: {
+    marginTop: 10,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  botoesRelatorio:{
-    marginTop:200,
+  barContainerCentro: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  botoesGeraRelatorio: {
+    marginTop: 190,
+    alignItems: 'center',
+    justifyContent: 'center',
+
   },
   tituloRelatorioEmail: {
     marginBottom: 40,
@@ -181,14 +198,32 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  btnEnviarEmail:{
-    marginTop:20,
+  btnEnviarEmail: {
+    marginTop: 20,
     marginLeft: 70,
-    marginRight:-40,
+    marginRight: -40,
   },
-  botoesEnviarEmail:{
-    marginTop:80,
+  botoesEnviarEmail: {
+    marginTop: 80,
     marginLeft: 70,
-    marginRight:-40,
+    marginRight: -40,
   },
+  monitorPicker: {
+    marginTop: 50,
+    marginBottom: -30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  editMenuButtons: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 50
+  },
+  infoCadastroPlantaStyle: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+  }
 });
