@@ -9,6 +9,7 @@ import { Table, Row, Rows } from 'react-native-table-component';
 import { Input } from '../../components/Input';
 import RNPickerSelect from 'react-native-picker-select';
 import Blink from '../../components/Blink'
+import BlinkPH from '../../components/BlinkPH';
 import { ImageBackground } from 'react-native-web';
 
 
@@ -107,7 +108,7 @@ export function Monitor({ navigation }) {
 
   useEffect(() => {
     if (modalVisible == true) {
-      console.log('effect carregado')
+      //console.log('effect carregado')
       buscaDadosPlantas();
       const interval = setInterval(buscaDadosPlantas, 1000);
       return () => clearInterval(interval);
@@ -150,9 +151,9 @@ export function Monitor({ navigation }) {
         method: 'GET',
       });
       console.log("Mensagem MQTT Enviada Ligar")
-      console.log(fosforoNumerico)
-      console.log(plantaData[0].fosforo)
-      console.log(fosforoAlertVisible)
+      //console.log(fosforoNumerico)
+      //console.log(plantaData[0].fosforo)
+      //console.log(fosforoAlertVisible)
     }
     catch {
       // console.log(mensagemMQTT)
@@ -237,8 +238,8 @@ export function Monitor({ navigation }) {
 
   const handleIniciarMonitoramento = async () => {
     try {
-      console.log(imagemSelecionada);
-      console.log(edicaoSelecionada);
+      //console.log(imagemSelecionada);
+      //console.log(edicaoSelecionada);
       if (imagemSelecionada !== null && edicaoSelecionada !== null) {
         // Ambos foram selecionados, emita um aviso ou tome a ação apropriada
         SetInfoSelecionadas('Selecione apenas uma opção: imagem ou valor do Editado.');
@@ -503,6 +504,7 @@ export function Monitor({ navigation }) {
       setRelatorioData(formattedData);
       //console.log(graficoData)
       // Abra o modal do relatório
+
       setModalGeraRelatorio(true);
 
     } catch (error) {
@@ -595,6 +597,12 @@ export function Monitor({ navigation }) {
       return;
     }
 
+    if (nomeEditado == 'TOMATE' && nomeEditado == 'REPOLHO' &&
+      nomeEditado == 'BATATA' && nomeEditado == 'HORTELA') {
+      setInfoCadastroPlanta("Não é possível editar os Valores Padrões");
+      return;
+    }
+
     try {
 
       const url = `https://smartgreen.azurewebsites.net/Plantas/cadastrarPlanta?nomePlanta=${nomeEditado}&temperatura=${temperaturaEditada}&umidade=${umidadeEditada}&nitrogenio=${nitrogenioEditada}&fosforo=${fosforoEditada}&PH=${phEditada}&potassio=${potassioEditada}&luminosidade=0`;
@@ -646,10 +654,6 @@ export function Monitor({ navigation }) {
         throw new Error(`Erro na solicitação: ${response.status} - ${response.statusText}`);
       }
 
-
-      // Restante da lógica, se necessário
-
-      // Se tudo estiver correto, você pode redefinir a mensagem de erro para vazia ou uma mensagem de sucesso
     } catch (error) {
       console.error(error);
       // Em caso de erro na chamada da API, trate conforme necessário
@@ -672,7 +676,7 @@ export function Monitor({ navigation }) {
 
   const botaoExcluiMonitoramentoEditado = async () => {
     setInfoCadastroPlanta('')
-    console.log(nomeEditado)
+    //console.log(nomeEditado)
     if (nomeEditado !== 'TOMATE' && nomeEditado !== 'REPOLHO' &&
       nomeEditado !== 'BATATA' && nomeEditado !== 'HORTELA') {
 
@@ -685,10 +689,18 @@ export function Monitor({ navigation }) {
 
         if (data.length > 0) {
 
+          const url = `https://smartgreen.azurewebsites.net/Plantas/deletarDadosPlantasPorNome?nomePlanta=${nomeEditado}`;
+
+          const response = await fetch(url);
+
+          setModalCriaPlanta(false)
+
         }
         else {
+
           setInfoCadastroPlanta('Não existe nenhum monitoramento com esse nome')
         }
+
 
 
       }
@@ -702,15 +714,11 @@ export function Monitor({ navigation }) {
 
   }
 
+  const TamanhoRelatorio = [100, 38, 38, 38, 38, 38, 38, 38];
 
-  const chartConfig = {
-    backgroundGradientFrom: '#fff',
-    backgroundGradientTo: '#fff',
-    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-    style: { borderRadius: 16 },
-  };
+  const tituloRelatorio = ['Data', 'T', 'U', 'P', 'PH', 'N', 'F', 'L']
 
-  const widthArr = [100, 38, 38, 38, 38, 38, 38, 38];
+  const borderRelatorio = { borderWidth: 2, borderColor: '#c8e1ff' }
 
   return (
     <View style={styles.container}>
@@ -833,7 +841,6 @@ export function Monitor({ navigation }) {
             />
           </View>
 
-          {/* Botão para gerar relatório */}
           <View style={styles.botoesGeraRelatorio}>
             <View>
               <Button title="Gerar Relatório"
@@ -850,7 +857,7 @@ export function Monitor({ navigation }) {
           </View>
         </View>
       </Modal>
-      {/*MODAL GERA RELATORIO*/}
+      {/*MODAL DO RELATORIO*/}
       <Modal
         visible={modalGeraRelatorio}
         transparent={false}
@@ -866,14 +873,14 @@ export function Monitor({ navigation }) {
             </TouchableOpacity>
           </View>
           <ScrollView>
-            <Table borderStyle={{ borderWidth: 2, borderColor: '#c8e1ff' }}>
-              <Row data={['Data', 'T', 'U', 'P', 'PH', 'N', 'F', 'L']} style={styles.head} widthArr={widthArr} />
-              <Rows data={relatorioData} widthArr={widthArr} />
+            <Table borderStyle={borderRelatorio}>
+              <Row data={tituloRelatorio} widthArr={TamanhoRelatorio} />
+              <Rows data={relatorioData} widthArr={TamanhoRelatorio} />
             </Table>
           </ScrollView>
         </View>
       </Modal>
-      {/*MODAL ENVIA RELATORIO*/}
+      {/*MODAL ENVIA EMAIL RELATORIO*/}
       <Modal
         visible={modalEnviaRelatorio}
       >
@@ -978,7 +985,7 @@ export function Monitor({ navigation }) {
             <View style={styles.barContainer}>
               <Text style={styles.texto}>pH</Text>
               <Text style={styles.texto}>Recomendada: {plantaData[0].ph}</Text>
-              <Blink duration={500} value1={data[0].ph} value2={plantaData[0].ph} >
+              <BlinkPH duration={500} value1={data[0].ph} value2={plantaData[0].ph} >
                 <AnimatedCircularProgress
                   size={100}
                   width={20}
@@ -992,7 +999,7 @@ export function Monitor({ navigation }) {
                     </View>
                   )}
                 </AnimatedCircularProgress>
-              </Blink>
+              </BlinkPH>
             </View>
           </View>
           <View style={styles.row}>
